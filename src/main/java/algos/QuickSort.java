@@ -1,6 +1,8 @@
 package algos;
 
 import metrics.Metrics;
+import util.ArrayUtils;
+import util.PartitionUtils;
 
 import java.util.Random;
 
@@ -9,7 +11,7 @@ public class QuickSort {
     private static final int DEFAULT_CUTOFF = 16;
 
     public static void sort(int[] a, Metrics m) {
-        if (a == null || a.length < 2) return;
+        if (ArrayUtils.isTrivial(a)) return;
         Random rnd = new Random();
         quickSort(a, 0, a.length, rnd, m, DEFAULT_CUTOFF);
     }
@@ -22,17 +24,9 @@ public class QuickSort {
             int pivotIndex = lo + rnd.nextInt(hi - lo);
             int pivot = a[pivotIndex];
 
-            int lt = lo, i = lo, gt = hi;
-            while (i < gt) {
-                m.incComparisons();
-                if (a[i] < pivot) {
-                    swap(a, lt++, i++);
-                } else if (a[i] > pivot) {
-                    swap(a, i, --gt);
-                } else {
-                    i++;
-                }
-            }
+            int[] parts = PartitionUtils.partition3(a, lo, hi, pivot, m);
+            int lt = parts[0], gt = parts[1];
+
 
             if (lt - lo < hi - gt) {
                 quickSort(a, lo, lt, rnd, m, cutoff);
@@ -44,7 +38,6 @@ public class QuickSort {
 
             m.popDepth();
         }
-
         insertionSort(a, lo, hi, m);
     }
 
@@ -60,11 +53,5 @@ public class QuickSort {
             }
             a[j + 1] = key;
         }
-    }
-
-    private static void swap(int[] a, int i, int j) {
-        int tmp = a[i];
-        a[i] = a[j];
-        a[j] = tmp;
     }
 }
