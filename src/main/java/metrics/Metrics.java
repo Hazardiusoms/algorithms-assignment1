@@ -4,31 +4,38 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Metrics {
+    private final AtomicLong comparisons = new AtomicLong(0);
+    private final AtomicLong allocations  = new AtomicLong(0);
+    private final AtomicLong elapsedNanos = new AtomicLong(0);
 
-    public long comparisons = 0;
-    public long allocations = 0;
-    public long elapsedNanos = 0L;
+    private final AtomicInteger currentDepth = new AtomicInteger(0);
+    private final AtomicInteger maxDepth = new AtomicInteger(0);
 
-    private int currentDepth = 0;
-    public int maxDepth = 0;
 
-    public void incComparisons() { comparisons++; }
-    public void incAllocations()  { allocations++; }
-
-    public void addElapsedNanos(long nanos) { elapsedNanos += nanos; }
+    public void incComparisons() { comparisons.incrementAndGet(); }
+    public void incAllocations()  { allocations.incrementAndGet(); }
+    public void addElapsedNanos(long nanos) { elapsedNanos.addAndGet(nanos); }
 
     public void pushDepth() {
-        currentDepth++;
-        if (currentDepth > maxDepth) maxDepth = currentDepth;
+        int d = currentDepth.incrementAndGet();
+        maxDepth.updateAndGet(prev -> Math.max(prev, d));
     }
 
     public void popDepth() {
-        if (currentDepth > 0) currentDepth--;
+        currentDepth.updateAndGet(prev -> Math.max(0, prev - 1));
     }
 
 
-    public String toCsvRow(String algo, int n, int trial, long seed, int cutoff) {
-        return String.format("%s,%d,%d,%d,%d,%d,%d,%d,%d",
-                algo, n, trial, seed, elapsedNanos, comparisons, allocations, maxDepth, cutoff);
+    public long getComparisons() { return comparisons.get(); }
+    public long getAllocations()  { return allocations.get(); }
+    public long getElapsedNanos() { return elapsedNanos.get(); }
+    public int  getCurrentDepth() { return currentDepth.get(); }
+    public int  getMaxDepth()     { return maxDepth.get(); }
+
+
+    public String toCsvRow(String algo, int size, int trial, long seed, int cutoff) {
+        return String.format("%s,%d,%d,%d,%d,%d,%d",
+                algo, size, trial, seed,
+                getElapsedNanos(), getComparisons(), getAllocations());
     }
 }

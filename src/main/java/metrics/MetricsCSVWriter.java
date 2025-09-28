@@ -3,28 +3,24 @@ package metrics;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
-public class MetricsCSVWriter {
-    private final Path out;
-    private final boolean headerWritten;
+public class MetricsCSVWriter implements AutoCloseable {
+    private final PrintWriter out;
 
-    public MetricsCSVWriter(Path out) throws IOException {
-        this.out = out;
-        headerWritten = Files.exists(out) && Files.size(out) > 0;
-        if (!headerWritten) {
-            try (PrintWriter pw = new PrintWriter(new FileWriter(out.toFile(), true))) {
-                pw.println("algo,n,trial,seed,time_ns,comparisons,allocations,maxDepth,cutoff");
-            }
-        }
+    public MetricsCSVWriter(String filename) throws IOException {
+        this.out = new PrintWriter(new FileWriter(filename, true));
+        // header row if empty file
+        out.println("algo,size,comparisons,allocations,maxDepth");
     }
 
-    public synchronized void appendRow(String csvRow) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(out.toFile(), true))) {
-            pw.println(csvRow);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to write CSV row", e);
-        }
+    public void writeRow(String algo, int size, Metrics m) {
+        out.printf("%s,%d,%d,%d,%d%n",
+                algo, size, m.getComparisons(), m.getAllocations(), m.getMaxDepth());
+        out.flush();
+    }
+
+    @Override
+    public void close() {
+        out.close();
     }
 }
