@@ -1,4 +1,4 @@
-AA_ASSIGN_1
+DAA_ASSIGN_1
 Student: Nursalim Onalbayev
 
 Group: SE-2425
