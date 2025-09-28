@@ -1,6 +1,6 @@
-package algos;  // ✅ match folder "algos"
+package algos;
 
-import metrics.Metrics;  // ✅ match folder "metrics"
+import metrics.Metrics;
 
 public class MergeSort {
 
