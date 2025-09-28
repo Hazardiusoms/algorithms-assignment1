@@ -1,0 +1,4 @@
+algo,size,comparisons,allocations,maxDepth
+mergesort,1000,10313,1,7
+mergesort,1000,10282,1,7
+mergesort,1000,10280,1,7
